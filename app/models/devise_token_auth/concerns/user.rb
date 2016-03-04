@@ -1,3 +1,5 @@
+require 'bcrypt'
+
 module DeviseTokenAuth::Concerns::User
   extend ActiveSupport::Concern
 
@@ -108,7 +110,7 @@ module DeviseTokenAuth::Concerns::User
       DateTime.strptime(self.tokens[client_id]['expiry'].to_s, '%s') > Time.now and
 
       # ensure that the token is valid
-      BCrypt::Password.new(self.tokens[client_id]['token']) == token
+      ::BCrypt::Password.new(self.tokens[client_id]['token']) == token
     )
   end
 
@@ -124,7 +126,7 @@ module DeviseTokenAuth::Concerns::User
       Time.parse(self.tokens[client_id]['updated_at']) > Time.now - DeviseTokenAuth.batch_request_buffer_throttle and
 
       # ensure that the token is valid
-      BCrypt::Password.new(self.tokens[client_id]['last_token']) == token
+      ::BCrypt::Password.new(self.tokens[client_id]['last_token']) == token
     )
   end
 
@@ -134,7 +136,7 @@ module DeviseTokenAuth::Concerns::User
     client_id  ||= SecureRandom.urlsafe_base64(nil, false)
     last_token ||= nil
     token        = SecureRandom.urlsafe_base64(nil, false)
-    token_hash   = BCrypt::Password.create(token)
+    token_hash   = ::BCrypt::Password.create(token)
     expiry       = (Time.now + DeviseTokenAuth.token_lifespan).to_i
 
     if self.tokens[client_id] and self.tokens[client_id]['token']
